@@ -1,0 +1,118 @@
+name: ArgWitness
+description: Find concrete old-valid/new-invalid calls when AI tool schemas change.
+author: GenRamzi
+branding:
+  icon: alert-triangle
+  color: orange
+
+inputs:
+  before:
+    description: Workspace-relative path to the baseline tool catalog.
+    required: true
+  after:
+    description: Workspace-relative path to the candidate tool catalog.
+    required: true
+  calls:
+    description: Optional workspace-relative JSONL or JSON array of sanitized captured calls.
+    required: false
+    default: ""
+  format:
+    description: Report format: text, json, or markdown.
+    required: false
+    default: markdown
+  report:
+    description: Workspace-relative output path for the report.
+    required: false
+    default: argwitness-report.md
+  limit:
+    description: Maximum bounded witness-search candidates per tool.
+    required: false
+    default: "512"
+  show-values:
+    description: Include potentially sensitive argument values in the report.
+    required: false
+    default: "false"
+
+outputs:
+  exit-code:
+    description: ArgWitness exit code: 0 unchanged/added, 1 breaking, 2 review, 3 input error.
+    value: ${{ steps.compare.outputs.exit-code }}
+  report:
+    description: Workspace-relative report path.
+    value: ${{ steps.compare.outputs.report }}
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-python@v6
+      with:
+        python-version: "3.12"
+
+    - name: Install ArgWitness from the pinned action revision
+      shell: bash
+      run: python -m pip install --disable-pip-version-check "$GITHUB_ACTION_PATH"
+
+    - name: Compare tool contracts
+      id: compare
+      shell: bash
+      env:
+        ARGWITNESS_BEFORE: ${{ inputs.before }}
+        ARGWITNESS_AFTER: ${{ inputs.after }}
+        ARGWITNESS_CALLS: ${{ inputs.calls }}
+        ARGWITNESS_FORMAT: ${{ inputs.format }}
+        ARGWITNESS_REPORT: ${{ inputs.report }}
+        ARGWITNESS_LIMIT: ${{ inputs.limit }}
+        ARGWITNESS_SHOW_VALUES: ${{ inputs.show-values }}
+      run: |
+        set -euo pipefail
+
+        case "$ARGWITNESS_FORMAT" in text|json|markdown) ;; *)
+          echo "format must be text, json, or markdown" >&2
+          exit 3
+        esac
+        case "$ARGWITNESS_SHOW_VALUES" in true|false) ;; *)
+          echo "show-values must be true or false" >&2
+          exit 3
+        esac
+        if ! [[ "$ARGWITNESS_LIMIT" =~ ^[1-9][0-9]*$ ]]; then
+          echo "limit must be a positive integer" >&2
+          exit 3
+        fi
+
+        resolve_workspace_path() {
+          local rel="$1"
+          local abs
+          abs="$(realpath -m -- "$GITHUB_WORKSPACE/$rel")"
+          case "$abs" in
+            "$GITHUB_WORKSPACE"|"$GITHUB_WORKSPACE"/*) printf '%s\n' "$abs" ;;
+            *) echo "path escapes GITHUB_WORKSPACE: $rel" >&2; exit 3 ;;
+          esac
+        }
+
+        before="$(resolve_workspace_path "$ARGWITNESS_BEFORE")"
+        after="$(resolve_workspace_path "$ARGWITNESS_AFTER")"
+        report="$(resolve_workspace_path "$ARGWITNESS_REPORT")"
+        mkdir -p "$(dirname "$report")"
+
+        args=(compare "$before" "$after" --format "$ARGWITNESS_FORMAT" --limit "$ARGWITNESS_LIMIT")
+        if [[ -n "$ARGWITNESS_CALLS" ]]; then
+          calls="$(resolve_workspace_path "$ARGWITNESS_CALLS")"
+          args+=(--calls "$calls")
+        fi
+        if [[ "$ARGWITNESS_SHOW_VALUES" == "true" ]]; then
+          args+=(--show-values)
+        fi
+
+        set +e
+        python -m argwitness "${args[@]}" > "$report"
+        code=$?
+        set -e
+
+        echo "exit-code=$code" >> "$GITHUB_OUTPUT"
+        echo "report=$ARGWITNESS_REPORT" >> "$GITHUB_OUTPUT"
+
+        if [[ "$ARGWITNESS_FORMAT" == "markdown" ]]; then
+          cat "$report" >> "$GITHUB_STEP_SUMMARY"
+        fi
+
+        exit "$code"
