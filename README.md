@@ -62,7 +62,10 @@ argwitness replay after.json calls.jsonl --format markdown
 argwitness verify before.json after.json witness.json
 
 # Normalize provider-specific envelopes to a shared tool catalog.
-argwitness normalize tools.json\n\n# Select one effective view from a multi-protocol MCP Description document.\nargwitness normalize server.mcpdesc.json --protocol-version 2026-07-28
+argwitness normalize tools.json
+
+# Select one effective view from a multi-protocol MCP Description document.
+argwitness normalize server.mcpdesc.json --protocol-version 2026-07-28
 ```
 
 Reports support `text`, `json`, and `markdown`. Redirect stdout to save a report. `normalize` always emits JSON and preserves catalog values; it is not a redaction command.
@@ -87,7 +90,8 @@ Generated search is deterministic and bounded. It is strongest on common object 
 | Source | Catalog shape | Captured call shape |
 | --- | --- | --- |
 | MCP | `{"tools":[{"name":"...","inputSchema":{...}}]}` or JSON-RPC `result` | `tools/call` request, or `{tool, arguments}` |
-| mcp-contracts snapshot | `.mcpc.json` with `snapshotVersion` and object-map `tools` | Use sanitized calls in ArgWitness format if desired |\n| MCP Description (`mcpdesc`) | JSON `mcpdesc` document with `tools[]`; use `--protocol-version` for authored multi-protocol variants | Use sanitized calls in ArgWitness format if desired |
+| mcp-contracts snapshot | `.mcpc.json` with `snapshotVersion` and object-map `tools` | Use sanitized calls in ArgWitness format if desired |
+| MCP Description (`mcpdesc`) | JSON `mcpdesc` document with `tools[]`; use `--protocol-version` for authored multi-protocol variants | Use sanitized calls in ArgWitness format if desired |
 | OpenAI Chat Completions | `[{"type":"function","function":{"name":"...","parameters":{...}}}]` | `{function:{name,arguments}}` |
 | OpenAI Responses | `[{"type":"function","name":"...","parameters":{...}}]` | `{type:"function_call",name,arguments}` |
 | Anthropic | `[{"name":"...","input_schema":{...}}]` | `{type:"tool_use",name,input}` |
@@ -109,7 +113,7 @@ If any breaking finding exists, comparison exits `1` even when there are also re
 
 ## GitHub Action
 
-ArgWitness can run directly in pull requests. Pin the immutable `v0.1.0` release tag (or an immutable commit SHA) rather than `main`:
+ArgWitness can run directly in pull requests. Pin the immutable `v0.3.0` release tag (or an immutable commit SHA) rather than `main`:
 
 ```yaml
 name: Tool contract compatibility
@@ -125,7 +129,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - uses: GenRamzi/argwitness@v0.2.0
+      - uses: GenRamzi/argwitness@v0.3.0
         with:
           before: contracts/baseline.json
           after: contracts/candidate.json

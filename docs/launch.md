@@ -9,10 +9,11 @@ saved MCP, OpenAI, and Anthropic definitions, without executing the tools.
 
 ## Current public release
 
-ArgWitness v0.2.0 is published on PyPI and GitHub. It adds direct mcp-contracts
-snapshot interoperability, and CI verifies the adapter against public upstream
-fixtures at a pinned mcp-contracts commit. This is interoperability evidence, not
-upstream adoption or endorsement.
+ArgWitness v0.3.0 is published on PyPI and GitHub. It supports direct mcp-contracts
+snapshot import plus JSON MCP Description (`mcpdesc`) with explicit protocol
+selection, and CI verifies interoperability against pinned public revisions of
+mcp-contracts, tool-schema, and Cisco mcpcontract. This is interoperability
+evidence, not upstream adoption or endorsement.
 
 ## Demo to share
 
@@ -54,10 +55,11 @@ some support tracks. Recheck program terms and actual metrics before submission.
 1. `mcp-contracts/mcp-contracts` — direct snapshot interop is implemented and
    continuously tested; the ready-to-submit upstream issue is in
    `docs/outreach-mcp-contracts.md`.
-2. `slegarraga/tool-schema` — potential fit for cross-provider schema migrations;
-   do not contact until there is a concrete reproducible integration example.
-3. `cisco-open/mcptoolkit-contract` — relevant contract tooling; avoid generic
-   promotion and approach only with a specific interoperability result.
+2. `slegarraga/tool-schema` — pinned source interoperability is implemented;
+   public GitHub Discussion: https://github.com/slegarraga/tool-schema/discussions/45
+3. `cisco-open/mcptoolkit-contract` — pinned mcpdesc interoperability is now
+   implemented against real multi-protocol and historical Microsoft Learn fixtures;
+   outreach should reference this reproducible result rather than generic promotion.
 
 A failed attempt to write to an external repository because of connector
 permissions is not external activity and must not be reported as one.
@@ -72,3 +74,15 @@ an independently revalidated breaking witness for all three.
 
 This is technical interoperability evidence only. It is not adoption, endorsement,
 or a dependency relationship with tool-schema.
+
+## Pinned Cisco mcpdesc interoperability
+
+ArgWitness CI checks `cisco-open/mcptoolkit-contract` at commit
+`fd346ddb245b437e274a9400b73920bf0c017c98`. It verifies explicit
+`--protocol-version` selection against Cisco's multi-protocol fixture and checks
+the evidence boundary against two historical Microsoft Learn mcpdesc snapshots.
+
+The historical migration demonstrates why ArgWitness is complementary to
+rules-based compatibility tooling: removing an optional property from an open
+object can be semantically important while still lacking an old-valid/new-invalid
+JSON Schema witness. ArgWitness reports `review` instead of overstating evidence.

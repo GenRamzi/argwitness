@@ -1,6 +1,6 @@
 # Releasing ArgWitness
 
-ArgWitness releases v0.1.0 and v0.2.0 were published successfully on 2026-09-23 through PyPI trusted publishing from GitHub Actions.
+ArgWitness releases v0.1.0, v0.2.0, and v0.3.0 were published successfully on 2026-09-23 through PyPI trusted publishing from GitHub Actions.
 
 ## Trusted publisher
 
@@ -21,7 +21,7 @@ Releases are intentionally limited to:
 1. an immutable `v*` tag whose version exactly matches `pyproject.toml`, or
 2. an explicit manual workflow dispatch whose requested version exactly matches `pyproject.toml`.
 
-The one-time issue trigger used to bootstrap v0.1.0 was removed immediately after the successful first publication.
+The temporary owner-gated issue trigger used to bootstrap each early release was removed immediately after the corresponding successful publication. Permanent release paths remain tag + explicit manual dispatch only.
 
 ## Release gates
 
@@ -42,3 +42,9 @@ The first release workflow completed successfully. PyPI accepted both `argwitnes
 ## v0.2.0 evidence
 
 The v0.2.0 release added direct import of mcp-contracts v1-style `.mcpc.json` snapshots. PyPI trusted publishing and the matching GitHub Release completed successfully; the GitHub Release includes the wheel, source distribution, publish attestations, and `SHA256SUMS`.
+
+## v0.3.0 evidence
+
+The v0.3.0 release added direct JSON MCP Description (`mcpdesc`) support with explicit protocol-version selection for authored multi-protocol documents. Before publication, `main` passed Python 3.10/3.12/3.13, Action smoke testing, mcp-contracts interop, tool-schema interop, Cisco mcpdesc interop, package build, `twine check`, and clean-wheel installation.
+
+PyPI trusted publishing accepted `argwitness==0.3.0` and returned `https://pypi.org/project/argwitness/0.3.0/`. GitHub Release `v0.3.0` targets commit `bfdc99ae2fc4f4ba3c108c2811d7ebd0fc66542c` and contains the wheel, source distribution, both publish attestations, and `SHA256SUMS`.

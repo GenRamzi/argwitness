@@ -97,13 +97,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - uses: GenRamzi/argwitness@v0.2.0
+      - uses: GenRamzi/argwitness@v0.3.0
         with:
           before: contracts/baseline.json
           after: contracts/candidate.json
           calls: contracts/sanitized-calls.jsonl
           format: markdown
           report: artifacts/argwitness.md
+          # For authored multi-protocol mcpdesc files, also set:
+          # protocol-version: "2026-07-28"
 ```
 
 The Action constrains input and report paths to `GITHUB_WORKSPACE`, suppresses raw
@@ -114,7 +116,7 @@ rewrite both versions defeats the comparison.
 The CLI remains useful when a GitHub Action is not appropriate:
 
 ```bash
-python -m pip install 'argwitness==0.2.0'
+python -m pip install 'argwitness==0.3.0'
 argwitness compare contracts/baseline.json contracts/candidate.json --format markdown
 ```
 

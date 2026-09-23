@@ -46,8 +46,8 @@ Sources: [form](https://openai.com/form/codex-for-oss/),
 | OSI-approved license | MIT included |
 | Maintainer documentation and contribution path | Included |
 | Public repository and recent public contribution | Published at https://github.com/GenRamzi/argwitness |
-| Registry release | `argwitness==0.1.0` published to PyPI on 2026-09-23 via GitHub OIDC trusted publishing |
-| Independent users/dependents/downloads | Not established |
+| Registry release | `argwitness==0.3.0` published to PyPI on 2026-09-23 via GitHub OIDC trusted publishing; v0.1.0–v0.3.0 releases have matching GitHub artifacts/attestations |
+| Independent users/dependents/downloads | Not established; upstream outreach exists but is not counted as adoption |
 | External contributors | Not established |
 | Criticality score | Not measured; no claim |
 | Personal/account eligibility | Not fully verified |
