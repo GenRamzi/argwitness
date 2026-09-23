@@ -183,8 +183,47 @@ def _mcp_contracts_snapshot_tools(document):
     return result
 
 
-def catalog(document):
-    """Accept saved MCP/OpenAI/Anthropic catalogs and mcp-contracts snapshots."""
+def _mcpdesc_tools(document, protocol_version=None):
+    """Select an effective tool view from an MCP Description document."""
+    tools = document.get("tools")
+    if not isinstance(tools, list):
+        raise InputError("mcpdesc document requires a tools array")
+
+    if protocol_version is None:
+        return tools
+    if not isinstance(protocol_version, str) or not protocol_version or len(protocol_version) > 64:
+        raise InputError("protocol version must be a non-empty string (maximum 64 characters)")
+
+    declared = document.get("protocolVersions")
+    info = document.get("info")
+    single = info.get("protocolVersion") if isinstance(info, dict) else None
+
+    if declared is not None:
+        if not isinstance(declared, list) or not all(isinstance(item, str) for item in declared):
+            raise InputError("mcpdesc protocolVersions must be an array of strings")
+        if declared and protocol_version not in declared:
+            raise InputError("Requested protocol version is not declared by this mcpdesc document")
+    if isinstance(single, str) and protocol_version != single:
+        raise InputError("Requested protocol version does not match this mcpdesc document")
+
+    selected = []
+    for tool in tools:
+        if not isinstance(tool, dict):
+            raise InputError("Tool entry must be an object")
+        versions = tool.get("protocolVersions")
+        if versions is None:
+            selected.append(tool)
+            continue
+        if not isinstance(versions, list) or not all(isinstance(item, str) for item in versions):
+            raise InputError("mcpdesc tool protocolVersions must be an array of strings")
+        if protocol_version in versions:
+            selected.append(tool)
+    return selected
+
+
+def catalog(document, protocol_version=None):
+    """Accept saved provider catalogs, mcp-contracts snapshots, and MCP Description JSON."""
+    source = "generic"
     if isinstance(document, dict):
         if "result" in document:
             document = document["result"]
@@ -192,9 +231,20 @@ def catalog(document):
             if document.get("nextCursor"):
                 raise InputError("Incomplete MCP catalog: combine every tools/list page and remove nextCursor")
             if "snapshotVersion" in document:
+                if protocol_version is not None:
+                    raise InputError("--protocol-version is only valid for mcpdesc documents")
+                source = "mcp-contracts"
                 document = _mcp_contracts_snapshot_tools(document)
+            elif "mcpdesc" in document:
+                source = "mcpdesc"
+                document = _mcpdesc_tools(document, protocol_version)
             else:
+                if protocol_version is not None:
+                    raise InputError("--protocol-version is only valid for mcpdesc documents")
                 document = document.get("tools")
+    elif protocol_version is not None:
+        raise InputError("--protocol-version is only valid for mcpdesc documents")
+
     if not isinstance(document, list) or len(document) > 256:
         raise InputError("Expected a tool array or {tools: [...]} (maximum 256)")
     normalized = {}
@@ -210,12 +260,13 @@ def catalog(document):
         if not isinstance(name, str) or not name or len(name) > 256:
             raise InputError("Tool name must be a non-empty string (maximum 256 characters)")
         if name in normalized:
+            if source == "mcpdesc":
+                raise InputError("mcpdesc contains duplicate tool variants; use --protocol-version to select one effective protocol view")
             raise InputError("Duplicate tool name; namespace tools from different servers first")
         keys = [k for k in ("inputSchema", "input_schema", "parameters") if k in entry]
         if len(keys) != 1:
             raise InputError("Each tool must have exactly one inputSchema, input_schema, or parameters")
         schema = check_schema(entry[keys[0]])
-        # Preserve provider metadata for review, including strict and annotations.
         metadata = {k: v for k, v in entry.items() if k not in {"name", *keys}}
         if entry is not tool:
             metadata["_wrapper"] = {k: v for k, v in tool.items() if k != "function"}
@@ -223,9 +274,9 @@ def catalog(document):
     return normalized
 
 
-def normalize(document):
+def normalize(document, protocol_version=None):
     return {"tools": [{"name": tool["name"], "inputSchema": tool["inputSchema"], **tool["metadata"]}
-                      for _, tool in sorted(catalog(document).items())]}
+                      for _, tool in sorted(catalog(document, protocol_version=protocol_version).items())]}
 
 
 def calls(records):

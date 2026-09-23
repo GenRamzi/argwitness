@@ -66,6 +66,8 @@ def main(argv=None):
     ver.add_argument("witness")
     norm = commands.add_parser("normalize", help="Convert provider tools to a common catalog")
     norm.add_argument("catalog")
+    for child in (diff, rep, ver, norm):
+        child.add_argument("--protocol-version", help="Select one effective protocol view from a multi-protocol mcpdesc document")
     for child in (diff, rep, ver):
         child.add_argument("--format", choices=("text", "json", "markdown"), default="text")
     for child in (diff, rep):
@@ -73,17 +75,20 @@ def main(argv=None):
     args = parser.parse_args(argv)
     try:
         if args.command == "normalize":
-            sys.stdout.write(json.dumps(normalize(read_json(args.catalog)), indent=2, ensure_ascii=True) + "\n")
+            sys.stdout.write(json.dumps(normalize(read_json(args.catalog), protocol_version=args.protocol_version), indent=2, ensure_ascii=True) + "\n")
             return 0
         if args.command == "compare":
             report = compare(read_json(args.before), read_json(args.after), load_calls(args.calls),
-                             limit=args.limit, show_values=args.show_values)
+                             limit=args.limit, show_values=args.show_values,
+                             protocol_version=args.protocol_version)
             code = {"breaking": 1, "review": 2, "added": 0, "unchanged": 0}[report["status"]]
         elif args.command == "replay":
-            report = replay(read_json(args.catalog), load_calls(args.calls), show_values=args.show_values)
+            report = replay(read_json(args.catalog), load_calls(args.calls),
+                            show_values=args.show_values, protocol_version=args.protocol_version)
             code = 1 if report["status"] == "invalid" else 0
         else:
-            report = verify_witness(read_json(args.before), read_json(args.after), read_json(args.witness))
+            report = verify_witness(read_json(args.before), read_json(args.after), read_json(args.witness),
+                                    protocol_version=args.protocol_version)
             code = 0 if report["status"] == "confirmed" else 1
         sys.stdout.write(render(report, args.format))
         return code

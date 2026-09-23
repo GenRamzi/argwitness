@@ -8,7 +8,7 @@ ArgWitness finds concrete JSON arguments that an old AI tool schema accepts and 
 
 No API keys. No model calls. No server execution. No telemetry.
 
-> **Alpha v0.2.0.** A confirmed counterexample proves one schema incompatibility. Failing to find one does **not** prove compatibility. Unresolved changes fail CI with `review`, not a green checkmark.
+> **Alpha v0.3.0.** A confirmed counterexample proves one schema incompatibility. Failing to find one does **not** prove compatibility. Unresolved changes fail CI with `review`, not a green checkmark.
 
 ## The problem in one example
 
@@ -18,7 +18,7 @@ ArgWitness produces evidence:
 
 ```console
 $ argwitness compare examples/before.mcp.json examples/after.mcp.json --show-values
-ArgWitness 0.2.0 — BREAKING
+ArgWitness 0.3.0 — BREAKING
   AW002 "search_docs": breaking — Concrete call accepted before and rejected after
     OLD accepts -> NEW rejects (generated)
     {"query": "a", "limit": 100}
@@ -62,7 +62,7 @@ argwitness replay after.json calls.jsonl --format markdown
 argwitness verify before.json after.json witness.json
 
 # Normalize provider-specific envelopes to a shared tool catalog.
-argwitness normalize tools.json
+argwitness normalize tools.json\n\n# Select one effective view from a multi-protocol MCP Description document.\nargwitness normalize server.mcpdesc.json --protocol-version 2026-07-28
 ```
 
 Reports support `text`, `json`, and `markdown`. Redirect stdout to save a report. `normalize` always emits JSON and preserves catalog values; it is not a redaction command.
@@ -87,12 +87,12 @@ Generated search is deterministic and bounded. It is strongest on common object 
 | Source | Catalog shape | Captured call shape |
 | --- | --- | --- |
 | MCP | `{"tools":[{"name":"...","inputSchema":{...}}]}` or JSON-RPC `result` | `tools/call` request, or `{tool, arguments}` |
-| mcp-contracts snapshot | `.mcpc.json` with `snapshotVersion` and object-map `tools` | Use sanitized calls in ArgWitness format if desired |
+| mcp-contracts snapshot | `.mcpc.json` with `snapshotVersion` and object-map `tools` | Use sanitized calls in ArgWitness format if desired |\n| MCP Description (`mcpdesc`) | JSON `mcpdesc` document with `tools[]`; use `--protocol-version` for authored multi-protocol variants | Use sanitized calls in ArgWitness format if desired |
 | OpenAI Chat Completions | `[{"type":"function","function":{"name":"...","parameters":{...}}}]` | `{function:{name,arguments}}` |
 | OpenAI Responses | `[{"type":"function","name":"...","parameters":{...}}]` | `{type:"function_call",name,arguments}` |
 | Anthropic | `[{"name":"...","input_schema":{...}}]` | `{type:"tool_use",name,input}` |
 
-Save tool arrays rather than entire API request bodies. Calls can be JSONL or a JSON array; OpenAI argument strings are decoded as JSON. Combine all MCP catalog pages first. Duplicate tool names and incomplete paginated catalogs are rejected. Tools from different servers need explicit namespacing.
+Save tool arrays rather than entire API request bodies. Calls can be JSONL or a JSON array; OpenAI argument strings are decoded as JSON. Combine all MCP catalog pages first. Duplicate tool names and incomplete paginated catalogs are rejected. For authored multi-protocol `mcpdesc` files that contain multiple variants of the same tool name, select one effective view with `--protocol-version`. Tools from different servers still need explicit namespacing.
 
 These are **schema-envelope adapters**, not live SDK integrations or provider-conformance certification. For mcp-contracts snapshots, ArgWitness reads the tool schemas and metadata only; it does not verify snapshot hashes/signatures or analyze resources/prompts. See [integration examples](docs/integrations.md).
 

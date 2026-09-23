@@ -17,10 +17,11 @@ def _witness(old, new, value, source, show_values):
     return result
 
 
-def compare(before, after, observations=(), *, limit=512, show_values=False):
+def compare(before, after, observations=(), *, limit=512, show_values=False, protocol_version=None):
     if isinstance(limit, bool) or not isinstance(limit, int) or not 16 <= limit <= 4096:
         raise InputError("Candidate limit must be 16..4096")
-    old, new = catalog(before), catalog(after)
+    old = catalog(before, protocol_version=protocol_version)
+    new = catalog(after, protocol_version=protocol_version)
     observed = calls(observations)
     findings = []
     baseline_invalid = 0
@@ -72,8 +73,8 @@ def compare(before, after, observations=(), *, limit=512, show_values=False):
             "searchLimit": limit, "findings": findings}
 
 
-def replay(document, observations, *, show_values=False):
-    tools = catalog(document)
+def replay(document, observations, *, show_values=False, protocol_version=None):
+    tools = catalog(document, protocol_version=protocol_version)
     results = []
     for index, call in enumerate(calls(observations)):
         exists = call["tool"] in tools
@@ -87,8 +88,9 @@ def replay(document, observations, *, show_values=False):
             "catalogDigest": digest(tools), "calls": results}
 
 
-def verify_witness(before, after, witness):
-    old, new = catalog(before), catalog(after)
+def verify_witness(before, after, witness, *, protocol_version=None):
+    old = catalog(before, protocol_version=protocol_version)
+    new = catalog(after, protocol_version=protocol_version)
     call = calls([witness])[0]
     name = call["tool"]
     if name not in old or name not in new:

@@ -32,6 +32,10 @@ inputs:
     description: Include potentially sensitive argument values in the report.
     required: false
     default: "false"
+  protocol-version:
+    description: Optional effective MCP protocol version for multi-protocol mcpdesc documents.
+    required: false
+    default: ""
 
 outputs:
   exit-code:
@@ -63,6 +67,7 @@ runs:
         ARGWITNESS_REPORT: ${{ inputs.report }}
         ARGWITNESS_LIMIT: ${{ inputs.limit }}
         ARGWITNESS_SHOW_VALUES: ${{ inputs.show-values }}
+        ARGWITNESS_PROTOCOL_VERSION: ${{ inputs.protocol-version }}
       run: |
         set -euo pipefail
 
@@ -101,6 +106,9 @@ runs:
         fi
         if [[ "$ARGWITNESS_SHOW_VALUES" == "true" ]]; then
           args+=(--show-values)
+        fi
+        if [[ -n "$ARGWITNESS_PROTOCOL_VERSION" ]]; then
+          args+=(--protocol-version "$ARGWITNESS_PROTOCOL_VERSION")
         fi
 
         set +e

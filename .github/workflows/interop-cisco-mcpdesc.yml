@@ -1,0 +1,107 @@
+name: Cisco mcpdesc interop
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    paths:
+      - "src/argwitness/**"
+      - "tests/**"
+      - "action.yml"
+      - "pyproject.toml"
+      - ".github/workflows/interop-cisco-mcpdesc.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  mcpdesc:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout ArgWitness
+        uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - name: Checkout pinned Cisco mcpcontract fixtures
+        uses: actions/checkout@v5
+        with:
+          repository: cisco-open/mcptoolkit-contract
+          ref: fd346ddb245b437e274a9400b73920bf0c017c98
+          path: .interop/cisco
+          persist-credentials: false
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install ArgWitness and CI-only YAML parser
+        run: python -m pip install . PyYAML==6.0.2
+
+      - name: Require explicit protocol selection for an authored multi-protocol fixture
+        shell: bash
+        run: |
+          fixture=".interop/cisco/tests/fixtures/dumps/multi-protocol.mcpdesc.json"
+
+          set +e
+          argwitness normalize "$fixture" > /tmp/ambiguous.json 2> /tmp/ambiguous.err
+          code=$?
+          set -e
+          test "$code" -eq 3
+          grep -q -- "--protocol-version" /tmp/ambiguous.err
+
+          argwitness normalize "$fixture" --protocol-version 2025-11-25 > /tmp/legacy.json
+          argwitness normalize "$fixture" --protocol-version 2026-07-28 > /tmp/modern.json
+
+          python - <<'PY'
+          import json
+
+          with open("/tmp/legacy.json", encoding="utf-8") as fh:
+              legacy = json.load(fh)
+          with open("/tmp/modern.json", encoding="utf-8") as fh:
+              modern = json.load(fh)
+
+          assert legacy["tools"][0]["name"] == "run_job"
+          assert legacy["tools"][0]["description"] == "Legacy behavior"
+          assert modern["tools"][0]["name"] == "run_job"
+          assert modern["tools"][0]["description"] == "Modern behavior"
+          PY
+
+      - name: Convert pinned historical Microsoft Learn mcpdesc fixtures to JSON
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          import yaml
+
+          root = Path(".interop/cisco/docs/users/examples/microsoft-learn")
+          pairs = {
+              "old": root / "ms-learn-dump-v1.0.0-2025-11-20.yaml",
+              "new": root / "ms-learn-dump-v1.0.0-2026-06-30.yaml",
+          }
+          for name, path in pairs.items():
+              data = yaml.safe_load(path.read_text(encoding="utf-8"))
+              Path(f"/tmp/{name}.json").write_text(json.dumps(data), encoding="utf-8")
+          PY
+
+      - name: Preserve the concrete-witness boundary on a real historical migration
+        shell: bash
+        run: |
+          set +e
+          argwitness compare /tmp/old.json /tmp/new.json --format json > /tmp/history.json
+          code=$?
+          set -e
+          test "$code" -eq 2
+
+          python - <<'PY'
+          import json
+
+          with open("/tmp/history.json", encoding="utf-8") as fh:
+              report = json.load(fh)
+
+          assert report["status"] == "review", report
+          search = [f for f in report["findings"] if f["tool"] == "microsoft_docs_search"]
+          assert any(f["code"] == "AW003" for f in search), search
+          assert not any(f["code"] == "AW002" for f in search), search
+          PY
