@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.3.0 — 2026-09-23
+
+- Add direct JSON MCP Description (`mcpdesc`) support with explicit protocol-version selection.
+- Fail closed when authored multi-protocol documents contain duplicate tool variants and no effective protocol view is selected.
+- Expose `--protocol-version` through compare, replay, verify, normalize, and the GitHub Action.
+- Continuously test against pinned Cisco mcpcontract fixtures, including a real multi-protocol document and historical Microsoft Learn snapshots.
+- Preserve the evidence boundary: semantic/rules-based breaks that do not create an old-valid/new-invalid JSON Schema input remain `review`.
+
 ## 0.2.0 — 2026-09-23
 
 - Add direct import of mcp-contracts v1-style `.mcpc.json` snapshots with object-map tools.
