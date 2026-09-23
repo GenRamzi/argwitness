@@ -35,7 +35,8 @@ jobs:
       - name: Install release tooling
         run: python -m pip install --upgrade build twine
 
-      - name: Validate requested version
+      - name: Read and validate package version
+        id: package
         shell: bash
         env:
           REQUESTED_VERSION: ${{ inputs.version }}
@@ -46,6 +47,7 @@ jobs:
               print(tomllib.load(fh)["project"]["version"])
           PY
           )"
+          echo "version=$package_version" >> "$GITHUB_OUTPUT"
 
           if [[ "${GITHUB_REF_TYPE:-}" == "tag" ]]; then
             test "$GITHUB_REF_NAME" = "v$package_version" || {
@@ -77,27 +79,17 @@ jobs:
           cd /tmp
           /tmp/argwitness-wheel/bin/argwitness --version
 
-      - name: Generate checksums
-        run: sha256sum dist/* > dist/SHA256SUMS
-
       - name: Publish to PyPI with trusted publishing
         uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33
+
+      - name: Generate checksums for GitHub Release
+        run: sha256sum dist/* > dist/SHA256SUMS
 
       - name: Create GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "v$(python - <<'PY'
-          import tomllib
-          with open("pyproject.toml", "rb") as fh:
-              print(tomllib.load(fh)["project"]["version"])
-          PY
-          )" dist/* \
+          gh release create "v${{ steps.package.outputs.version }}" dist/* \
             --target "$GITHUB_SHA" \
-            --title "ArgWitness v$(python - <<'PY'
-          import tomllib
-          with open("pyproject.toml", "rb") as fh:
-              print(tomllib.load(fh)["project"]["version"])
-          PY
-          )" \
+            --title "ArgWitness v${{ steps.package.outputs.version }}" \
             --generate-notes
