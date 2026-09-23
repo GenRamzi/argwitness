@@ -1,0 +1,116 @@
+name: tool-schema interop
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    paths:
+      - "src/argwitness/**"
+      - "tests/**"
+      - "pyproject.toml"
+      - ".github/workflows/interop-tool-schema.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  provider-outputs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout ArgWitness
+        uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - name: Checkout pinned tool-schema source
+        uses: actions/checkout@v5
+        with:
+          repository: slegarraga/tool-schema
+          ref: 56ca752ca2a4d25af17b542259fc75b69aceaba8
+          path: .interop/tool-schema
+          persist-credentials: false
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: .interop/tool-schema/package-lock.json
+
+      - name: Build pinned tool-schema
+        working-directory: .interop/tool-schema
+        run: |
+          npm ci
+          npm run build
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install ArgWitness from this commit
+        run: python -m pip install .
+
+      - name: Generate real provider envelopes with tool-schema
+        shell: bash
+        run: |
+          mkdir -p .interop/generated
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          import { toTool } from './.interop/tool-schema/dist/index.js';
+
+          const before = {
+            name: 'search_docs',
+            description: 'Search documentation',
+            schema: {
+              type: 'object',
+              properties: {
+                query: { type: 'string' },
+                limit: { type: 'integer', minimum: 1, maximum: 100 },
+              },
+              required: ['query', 'limit'],
+            },
+          };
+
+          const after = structuredClone(before);
+          after.schema.properties.limit.maximum = 20;
+
+          for (const target of ['openai', 'anthropic', 'mcp']) {
+            const oldTool = toTool(before, { target }).tool;
+            const newTool = toTool(after, { target }).tool;
+            fs.writeFileSync(
+              `.interop/generated/${target}-before.json`,
+              JSON.stringify([oldTool], null, 2),
+            );
+            fs.writeFileSync(
+              `.interop/generated/${target}-after.json`,
+              JSON.stringify([newTool], null, 2),
+            );
+          }
+          NODE
+
+      - name: Require a concrete witness for each provider envelope
+        shell: bash
+        run: |
+          for target in openai anthropic mcp; do
+            set +e
+            argwitness compare               ".interop/generated/$target-before.json"               ".interop/generated/$target-after.json"               --format json               --show-values > ".interop/generated/$target-report.json"
+            code=$?
+            set -e
+            test "$code" -eq 1
+          done
+
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          for target in ("openai", "anthropic", "mcp"):
+              report = json.loads(Path(f".interop/generated/{target}-report.json").read_text())
+              assert report["status"] == "breaking", (target, report)
+              finding = next(
+                  item for item in report["findings"]
+                  if item.get("tool") == "search_docs" and item.get("code") == "AW002"
+              )
+              args = finding["witness"]["arguments"]
+              assert 20 < args["limit"] <= 100, (target, args)
+              assert finding["witness"]["oldValid"] is True
+              assert finding["witness"]["newValid"] is False
+          PY
