@@ -1,0 +1,2 @@
+{"tool":"search_docs","arguments":{"query":"local inference","limit":50,"mode":"complete"}}
+{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"search_docs","arguments":{"query":"agents","limit":10}}}

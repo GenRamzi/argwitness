@@ -1,0 +1,14 @@
+[
+  {
+    "type": "function",
+    "name": "search_docs",
+    "description": "Search public documentation",
+    "parameters": {
+      "type": "object",
+      "properties": {"query": {"type": "string"}},
+      "required": ["query"],
+      "additionalProperties": false
+    },
+    "strict": true
+  }
+]
