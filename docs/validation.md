@@ -53,3 +53,14 @@ argwitness --version
 ## v0.2.0 interoperability validation
 
 The release adds direct parsing for mcp-contracts v1-style snapshots where `tools` is an object map. CI verifies name derivation, metadata preservation, embedded-name conflict rejection, and a concrete old-valid/new-invalid witness for a tightened numeric bound. The release passed Python 3.10/3.12/3.13, Action smoke testing, package build, `twine check`, and clean-wheel installation before trusted publication.
+
+## Pinned upstream interoperability fixture
+
+CI checks the parser against public snapshot fixtures from `mcp-contracts/mcp-contracts`
+at commit `5228e7ad71b080c3d56001b3019289703f5dc231`. The workflow compares the
+upstream `server-v1.mcpc.json` and `server-v2-breaking.mcpc.json` fixtures and
+asserts that the removed `delete_contact` tool is reported as `AW001` breaking.
+
+This demonstrates compatibility with that pinned public snapshot shape. It is not
+evidence that mcp-contracts endorses, depends on, or adopts ArgWitness, and it does
+not imply compatibility with future snapshot-format changes.
