@@ -52,8 +52,7 @@ the README; tool results and transcripts are not accepted as call records.
 
 ## CI in another repository
 
-Prefer the bundled GitHub Action and pin a reviewed immutable commit until a release
-tag exists:
+Prefer the bundled GitHub Action and pin the latest reviewed immutable release tag or commit:
 
 ```yaml
 name: Tool contract compatibility
@@ -67,7 +66,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - uses: GenRamzi/argwitness@REVIEWED_SHA
+      - uses: GenRamzi/argwitness@v0.2.0
         with:
           before: contracts/baseline.json
           after: contracts/candidate.json
@@ -84,7 +83,7 @@ rewrite both versions defeats the comparison.
 The CLI remains useful when a GitHub Action is not appropriate:
 
 ```bash
-python -m pip install 'git+https://github.com/GenRamzi/argwitness.git@REVIEWED_SHA'
+python -m pip install 'argwitness==0.2.0'
 argwitness compare contracts/baseline.json contracts/candidate.json --format markdown
 ```
 

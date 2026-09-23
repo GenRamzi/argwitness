@@ -49,3 +49,7 @@ python -m twine check dist/*
 python -m pip install argwitness==0.1.0
 argwitness --version
 ```
+
+## v0.2.0 interoperability validation
+
+The release adds direct parsing for mcp-contracts v1-style snapshots where `tools` is an object map. CI verifies name derivation, metadata preservation, embedded-name conflict rejection, and a concrete old-valid/new-invalid witness for a tightened numeric bound. The release passed Python 3.10/3.12/3.13, Action smoke testing, package build, `twine check`, and clean-wheel installation before trusted publication.
