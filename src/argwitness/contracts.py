@@ -162,15 +162,39 @@ def errors(schema, value):
         raise InputError("Schema evaluation failed; recursive or unsupported reference") from exc
 
 
+def _mcp_contracts_snapshot_tools(document):
+    """Convert an mcp-contracts v1-style snapshot tool map into a tool array."""
+    tools = document.get("tools")
+    if not isinstance(tools, dict):
+        raise InputError("mcp-contracts snapshot requires a tools object")
+    if len(tools) > 256:
+        raise InputError("Expected at most 256 tools")
+    result = []
+    for name, raw in tools.items():
+        if not isinstance(name, str) or not name or len(name) > 256:
+            raise InputError("mcp-contracts tool keys must be non-empty strings")
+        if not isinstance(raw, dict):
+            raise InputError("mcp-contracts tool entry must be an object")
+        if "name" in raw and raw["name"] != name:
+            raise InputError("mcp-contracts tool key conflicts with embedded name")
+        entry = dict(raw)
+        entry["name"] = name
+        result.append(entry)
+    return result
+
+
 def catalog(document):
-    """Accept saved MCP tools/list, OpenAI function tools, Anthropic tools, or canonical catalogs."""
+    """Accept saved MCP/OpenAI/Anthropic catalogs and mcp-contracts snapshots."""
     if isinstance(document, dict):
         if "result" in document:
             document = document["result"]
         if isinstance(document, dict):
             if document.get("nextCursor"):
                 raise InputError("Incomplete MCP catalog: combine every tools/list page and remove nextCursor")
-            document = document.get("tools")
+            if "snapshotVersion" in document:
+                document = _mcp_contracts_snapshot_tools(document)
+            else:
+                document = document.get("tools")
     if not isinstance(document, list) or len(document) > 256:
         raise InputError("Expected a tool array or {tools: [...]} (maximum 256)")
     normalized = {}

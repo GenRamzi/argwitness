@@ -8,7 +8,7 @@ ArgWitness finds concrete JSON arguments that an old AI tool schema accepts and 
 
 No API keys. No model calls. No server execution. No telemetry.
 
-> **Alpha v0.1.0.** A confirmed counterexample proves one schema incompatibility. Failing to find one does **not** prove compatibility. Unresolved changes fail CI with `review`, not a green checkmark.
+> **Alpha v0.2.0.** A confirmed counterexample proves one schema incompatibility. Failing to find one does **not** prove compatibility. Unresolved changes fail CI with `review`, not a green checkmark.
 
 ## The problem in one example
 
@@ -18,7 +18,7 @@ ArgWitness produces evidence:
 
 ```console
 $ argwitness compare examples/before.mcp.json examples/after.mcp.json --show-values
-ArgWitness 0.1.0 — BREAKING
+ArgWitness 0.2.0 — BREAKING
   AW002 "search_docs": breaking — Concrete call accepted before and rejected after
     OLD accepts -> NEW rejects (generated)
     {"query": "a", "limit": 100}
@@ -87,13 +87,14 @@ Generated search is deterministic and bounded. It is strongest on common object 
 | Source | Catalog shape | Captured call shape |
 | --- | --- | --- |
 | MCP | `{"tools":[{"name":"...","inputSchema":{...}}]}` or JSON-RPC `result` | `tools/call` request, or `{tool, arguments}` |
+| mcp-contracts snapshot | `.mcpc.json` with `snapshotVersion` and object-map `tools` | Use sanitized calls in ArgWitness format if desired |
 | OpenAI Chat Completions | `[{"type":"function","function":{"name":"...","parameters":{...}}}]` | `{function:{name,arguments}}` |
 | OpenAI Responses | `[{"type":"function","name":"...","parameters":{...}}]` | `{type:"function_call",name,arguments}` |
 | Anthropic | `[{"name":"...","input_schema":{...}}]` | `{type:"tool_use",name,input}` |
 
 Save tool arrays rather than entire API request bodies. Calls can be JSONL or a JSON array; OpenAI argument strings are decoded as JSON. Combine all MCP catalog pages first. Duplicate tool names and incomplete paginated catalogs are rejected. Tools from different servers need explicit namespacing.
 
-These are **schema-envelope adapters**, not live SDK integrations or provider-conformance certification. See [integration examples](docs/integrations.md).
+These are **schema-envelope adapters**, not live SDK integrations or provider-conformance certification. For mcp-contracts snapshots, ArgWitness reads the tool schemas and metadata only; it does not verify snapshot hashes/signatures or analyze resources/prompts. See [integration examples](docs/integrations.md).
 
 ## Honest CI states
 

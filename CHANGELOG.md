@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.0 — 2026-09-23
+
+- Add direct import of mcp-contracts v1-style `.mcpc.json` snapshots with object-map tools.
+- Preserve tool metadata while deriving tool names from snapshot map keys.
+- Reject conflicting embedded names rather than silently choosing one.
+- Document the interoperability boundary: tool schemas only; no snapshot hash/signature or resource/prompt verification.
+
 ## 0.1.0 — 2026-09-23
 
 - MCP, OpenAI function, and Anthropic catalog/call envelope adapters.

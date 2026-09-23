@@ -15,6 +15,23 @@ The adapters preserve strict mode, annotations, descriptions, and other metadata
 for review. They do not implement each provider's extra schema restrictions, nor
 does accepting a catalog prove that a provider will accept that API request.
 
+## mcp-contracts snapshot interop
+
+ArgWitness can consume the current v1-style `.mcpc.json` snapshot shape from
+[mcp-contracts](https://github.com/mcp-contracts/mcp-contracts) directly. The
+snapshot's object-map tool keys become tool names, so no conversion script is
+required:
+
+```bash
+argwitness compare contracts/v1.mcpc.json contracts/v2.mcpc.json --show-values
+```
+
+This interop is intentionally narrow and complementary. ArgWitness reads tool
+`inputSchema` plus tool metadata in order to find old-valid/new-invalid inputs.
+It does **not** verify mcp-contracts content hashes or signatures, connect to the
+server, or analyze snapshot resources/prompts. Use mcp-contracts itself for those
+responsibilities.
+
 ## Captured calls
 
 Create sanitized JSONL records:
