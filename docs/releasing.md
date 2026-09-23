@@ -1,30 +1,40 @@
 # Releasing ArgWitness
 
-ArgWitness is release-ready in the repository. The first registry publication requires a **Pending Trusted Publisher** in PyPI because the project does not yet exist there.
+ArgWitness v0.1.0 was published successfully on 2026-09-23 through PyPI trusted publishing from GitHub Actions.
 
-## PyPI pending trusted publisher
+## Trusted publisher
 
-In PyPI, open your account's **Publishing** page and add a GitHub Actions pending publisher with exactly:
+The PyPI publisher is bound to:
 
-- PyPI project name: `argwitness`
+- PyPI project: `argwitness`
 - GitHub owner: `GenRamzi`
 - Repository: `argwitness`
 - Workflow filename: `release.yml`
-- Environment name: leave blank
+- Environment name: unset
 
-The project metadata also uses the exact normalized name `argwitness`. A pending publisher does not reserve the name; the first successful OIDC publication creates the PyPI project and converts the pending publisher into a normal trusted publisher.
+The release workflow uses `id-token: write`; no long-lived PyPI API token is required.
+
+## Permanent release paths
+
+Releases are intentionally limited to:
+
+1. an immutable `v*` tag whose version exactly matches `pyproject.toml`, or
+2. an explicit manual workflow dispatch whose requested version exactly matches `pyproject.toml`.
+
+The one-time issue trigger used to bootstrap v0.1.0 was removed immediately after the successful first publication.
 
 ## Release gates
 
-Before publishing `v0.1.0`:
+Before any future release:
 
 1. `main` Tests must be green on Python 3.10, 3.12, and 3.13.
 2. The Action smoke test must prove that unchanged contracts pass and breaking contracts fail closed.
 3. The package job must build wheel/sdist, pass `twine check`, and install the wheel in a clean virtual environment.
-4. `pyproject.toml` and `CHANGELOG.md` must both describe `0.1.0`.
-5. The Pending Trusted Publisher must be configured in PyPI with the values above.
-6. Launch the release only for exact version `0.1.0`.
+4. `pyproject.toml` and `CHANGELOG.md` must agree on the intended version.
+5. Launch the workflow only for that exact version.
 
-The release workflow repeats source tests, the demo, dependency checks, build validation, and an installed-wheel smoke test. It then creates SHA-256 checksums, publishes through PyPI OIDC, and creates a matching GitHub Release with the distributions and checksums.
+The release workflow repeats source tests, the demo, dependency checks, build validation, and an installed-wheel smoke test. It publishes through PyPI OIDC, generates SHA-256 checksums, and creates a matching GitHub Release containing the distributions, PyPI attestations, and checksum file.
 
-Do not describe `0.1.0` as published until both PyPI and the GitHub Release confirm it.
+## v0.1.0 evidence
+
+The first release workflow completed successfully. PyPI accepted both `argwitness-0.1.0-py3-none-any.whl` and `argwitness-0.1.0.tar.gz` and returned the public project/version URL. GitHub Release `v0.1.0` targets commit `885fc13714efc120b97952e43467b24624f7e5aa` and includes the wheel, source distribution, their publish attestations, and `SHA256SUMS`.
