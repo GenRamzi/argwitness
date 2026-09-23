@@ -11,7 +11,7 @@
 1. Collect at least five sanitized schema migrations from independent maintainers.
 2. Improve generation where those examples expose misses; preserve counterexample soundness.
 3. Add property-based testing and a larger public compatibility fixture corpus.
-4. Decide package publication after name availability and the release checks are verified.
+4. Publish the first package only after the PyPI pending trusted publisher is configured and the tag-gated release checks are green.
 5. Add an opt-in machine-readable witness export and richer diagnostics.
 
 ## Research, not promised features
