@@ -1,44 +1,51 @@
-# Initial validation record
+# Release validation record
 
-Date: 2026-09-23. Scope: local alpha implementation. This record does not claim
-remote GitHub CI success, registry publication, live server verification, or adoption.
+Date: 2026-09-23.
 
-## Environment actually exercised
+This record distinguishes deterministic implementation/release evidence from external adoption. Publication and CI success are verified; live-provider behavior and independent downstream use are not inferred from them.
 
-- Linux, Python 3.12.14.
-- jsonschema 4.26.0; referencing 0.37.0.
-- setuptools 84.0.0; build 1.6.1.
+## Release evidence
 
-## Results
-
-| Check | Observed result |
+| Check | Verified result |
 | --- | --- |
-| Source unit and subprocess CLI tests | 54 passed |
-| Soundness fixture matrix within the test suite | 144 schema pairs; every emitted witness independently revalidated |
-| `python -m build --no-isolation` | Source distribution and wheel built successfully |
-| Install built wheel, replacing editable install | Succeeded |
-| Confirm import location | Loaded from installed site-packages, not source checkout |
-| Run all 54 tests against installed package | Passed |
-| Run `python examples/demo.py` against installed package | All three assertions passed |
-| Registry lookup for `argwitness` | No matching distribution returned at check time; name not reserved |
+| GitHub `main` tests | Passed on Python 3.10, 3.12, and 3.13 |
+| GitHub Action smoke test | Passed; unchanged succeeds and a breaking contract fails closed |
+| Source unit/subprocess tests | 54 tests in the release validation path |
+| Soundness fixture matrix | 144 schema pairs; emitted witnesses are independently revalidated |
+| Package build | Wheel and source distribution built successfully |
+| `twine check` | Passed for wheel and source distribution |
+| Clean installed-wheel smoke test | Passed outside the source checkout |
+| PyPI trusted publication | `argwitness==0.1.0` accepted through GitHub OIDC |
+| PyPI digital attestations | Generated for both wheel and source distribution |
+| GitHub Release | `v0.1.0` published successfully |
+| GitHub Release assets | wheel, sdist, both publish attestations, and `SHA256SUMS` |
 
-The demo found a generated breaking `search_docs` argument, marked the first of
-two synthetic captured calls invalid and the second valid, and independently
-confirmed the saved witness. Unit tests cover required fields, enums, scalar bounds,
-arrays, nesting, local refs, metadata review, strict JSON, pagination rejection,
-privacy defaults, output escaping, and CLI exit statuses.
+The release workflow's PyPI publisher returned the public version URL `https://pypi.org/project/argwitness/0.1.0/`.
 
-The CI file declares Python 3.10, 3.12, and 3.13 jobs. Only Python 3.12 was actually
-run locally. Windows/macOS, live providers, adversarial resource exhaustion, and
-external user workloads remain unverified. Fixtures are synthetic, not a comparative
-benchmark or certification.
+## Package digests observed during trusted publication
 
-## Reproduce
+- wheel subject SHA-256: `4d366c6e9f209a19c5a8ba86c52afc539ad7c521549c590f9d44631ad66e8a32`
+- source distribution subject SHA-256: `14adc4d0856eeea64273fb76dc2e177bb659120fe1d9edaad408f786b64692dc`
+
+GitHub Release also ships a generated `SHA256SUMS` covering the release files present after trusted publication.
+
+## Scope limits
+
+The fixtures are synthetic. This evidence does not establish production adoption, provider API conformance, server behavior, model tool-selection quality, Windows/macOS coverage, or resistance to adversarial resource exhaustion. A concrete witness proves one incompatibility; failure to generate one does not certify compatibility.
+
+## Reproduce from source
 
 ```bash
 python -m pip install .
 python -m unittest discover -s tests -v
 python examples/demo.py
-python -m pip install build
 python -m build
+python -m twine check dist/*
+```
+
+## Reproduce from registry
+
+```bash
+python -m pip install argwitness==0.1.0
+argwitness --version
 ```

@@ -10,18 +10,23 @@
 
 ## التشغيل
 
-تحتاج Python 3.10 أو أحدث. من مجلد المصدر:
+تحتاج Python 3.10 أو أحدث. ثبّت الإصدار العام من PyPI:
 
 ```bash
-python -m venv .venv
-source .venv/bin/activate
+python -m pip install argwitness
+argwitness --version
+```
+
+ولتجربة مثال المستودع من المصدر:
+
+```bash
+git clone https://github.com/GenRamzi/argwitness.git
+cd argwitness
 python -m pip install .
 python examples/demo.py
 ```
 
-في PowerShell على Windows استخدم `.venv\Scripts\Activate.ps1` لتفعيل البيئة.
-
-الحزمة لم تُنشر على PyPI بعد؛ ثبّتها من المصدر. التثبيت يحتاج تنزيل اعتماديات، ثم يعمل التحليل محليًا.
+التثبيت يحتاج تنزيل الاعتماديات، ثم يعمل التحليل محليًا دون استدعاء خدمات أو نماذج.
 
 ```bash
 argwitness compare examples/before.mcp.json examples/after.mcp.json --show-values

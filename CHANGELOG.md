@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.1.0 — initial alpha source
+## 0.1.0 — 2026-09-23
 
 - MCP, OpenAI function, and Anthropic catalog/call envelope adapters.
 - Bounded counterexample generation and structural shrinking.
@@ -11,4 +11,6 @@
 - Fail-closed GitHub Action with workspace-bounded paths and privacy-preserving defaults.
 - Tag-gated GitHub/PyPI release automation using OIDC trusted publishing.
 
-Registry publication, live provider verification, and independent adoption are not claimed.
+Published to PyPI as `argwitness==0.1.0` through GitHub OIDC trusted publishing, with digital attestations for the wheel and source distribution and matching GitHub Release artifacts/checksums.
+
+Live provider verification and independent adoption are not claimed.

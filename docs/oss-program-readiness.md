@@ -46,7 +46,7 @@ Sources: [form](https://openai.com/form/codex-for-oss/),
 | OSI-approved license | MIT included |
 | Maintainer documentation and contribution path | Included |
 | Public repository and recent public contribution | Published at https://github.com/GenRamzi/argwitness |
-| Registry release | Not published |
+| Registry release | `argwitness==0.1.0` published to PyPI on 2026-09-23 via GitHub OIDC trusted publishing |
 | Independent users/dependents/downloads | Not established |
 | External contributors | Not established |
 | Criticality score | Not measured; no claim |
@@ -70,7 +70,5 @@ Sources: [form](https://openai.com/form/codex-for-oss/),
 > and maintain releases. I would evaluate model-assisted repair suggestions against
 > deterministic schema validation rather than treating generated claims as proof.
 
-These drafts do not establish qualifying impact. Before applying, replace the
-publication status with verified facts, confirm the actual applicant identity and
-account details, and include genuine downstream use if it exists. Do not count
+These drafts do not establish qualifying impact. Registry publication is now verified; before applying, confirm the actual applicant identity and account details and include genuine downstream use if it exists. Do not count
 tests, self-owned demos, or generated activity as independent adoption.

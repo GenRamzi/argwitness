@@ -28,13 +28,18 @@ The arguments are validated against **both** schemas before reporting. `--show-v
 
 ## Try it in a minute
 
-Requires Python 3.10+. Install from this source checkout (the package has not been published to PyPI):
+Requires Python 3.10+. Install the public release from PyPI:
 
 ```bash
-python -m venv .venv
-# Linux/macOS:
-source .venv/bin/activate
-# Windows PowerShell: .venv\Scripts\Activate.ps1
+python -m pip install argwitness
+argwitness --version
+```
+
+To run the repository demo from source:
+
+```bash
+git clone https://github.com/GenRamzi/argwitness.git
+cd argwitness
 python -m pip install .
 python examples/demo.py
 ```
@@ -103,7 +108,7 @@ If any breaking finding exists, comparison exits `1` even when there are also re
 
 ## GitHub Action
 
-ArgWitness can run directly in pull requests without publishing the package to a registry. Until the first immutable release tag is published, pin a reviewed commit SHA rather than `main`:
+ArgWitness can run directly in pull requests. Pin the immutable `v0.1.0` release tag (or an immutable commit SHA) rather than `main`:
 
 ```yaml
 name: Tool contract compatibility
@@ -119,7 +124,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - uses: GenRamzi/argwitness@REVIEWED_SHA
+      - uses: GenRamzi/argwitness@v0.1.0
         with:
           before: contracts/baseline.json
           after: contracts/candidate.json
