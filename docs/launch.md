@@ -61,3 +61,14 @@ some support tracks. Recheck program terms and actual metrics before submission.
 
 A failed attempt to write to an external repository because of connector
 permissions is not external activity and must not be reported as one.
+
+## Pinned tool-schema interoperability
+
+ArgWitness CI also checks public `slegarraga/tool-schema` source at pinned commit
+`56ca752ca2a4d25af17b542259fc75b69aceaba8`. The workflow builds that project,
+uses its real `toTool` implementation to generate before/after OpenAI, Anthropic,
+and MCP envelopes from the same schema migration, and requires ArgWitness to emit
+an independently revalidated breaking witness for all three.
+
+This is technical interoperability evidence only. It is not adoption, endorsement,
+or a dependency relationship with tool-schema.
