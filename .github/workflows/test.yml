@@ -2,8 +2,10 @@ name: Tests
 on:
   push:
   pull_request:
+
 permissions:
   contents: read
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -20,3 +22,24 @@ jobs:
       - run: python -m pip install .
       - run: python -m unittest discover -s tests -v
       - run: python examples/demo.py
+
+  package:
+    name: Build and installed-wheel smoke test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --upgrade build twine
+      - run: python -m build
+      - run: python -m twine check dist/*
+      - name: Install wheel in a clean virtual environment
+        shell: bash
+        run: |
+          python -m venv /tmp/argwitness-wheel
+          /tmp/argwitness-wheel/bin/python -m pip install --quiet dist/*.whl
+          cd /tmp
+          /tmp/argwitness-wheel/bin/argwitness --version

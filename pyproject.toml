@@ -24,6 +24,8 @@ argwitness = "argwitness.cli:main"
 
 [project.urls]
 Repository = "https://github.com/GenRamzi/argwitness"
+Documentation = "https://github.com/GenRamzi/argwitness/tree/main/docs"
+Changelog = "https://github.com/GenRamzi/argwitness/blob/main/CHANGELOG.md"
 Issues = "https://github.com/GenRamzi/argwitness/issues"
 
 [tool.setuptools.packages.find]
