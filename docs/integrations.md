@@ -32,6 +32,37 @@ It does **not** verify mcp-contracts content hashes or signatures, connect to th
 server, or analyze snapshot resources/prompts. Use mcp-contracts itself for those
 responsibilities.
 
+## Cisco mcpcontract / MCP Description interop
+
+ArgWitness can consume JSON MCP Description (`mcpdesc`) documents directly when
+the effective tool names are unique. For authored multi-protocol documents where
+the same tool name has protocol-specific variants, select one view explicitly:
+
+```bash
+argwitness compare before.mcpdesc.json after.mcpdesc.json \
+  --protocol-version 2026-07-28 \
+  --format json
+```
+
+The GitHub Action exposes the same setting as `protocol-version`.
+
+ArgWitness deliberately fails with input-error exit `3` when a multi-protocol
+document contains duplicate tool variants and no protocol version is selected.
+It does not guess which protocol contract the caller intended.
+
+Pinned CI checks this behavior against
+`cisco-open/mcptoolkit-contract` commit
+`fd346ddb245b437e274a9400b73920bf0c017c98`, including Cisco's public
+`multi-protocol.mcpdesc.json` fixture. A second CI check compares two public
+historical Microsoft Learn mcpdesc snapshots from that repository. That real
+migration removes an optional `question` property from an open object schema;
+because the newer JSON Schema still accepts unknown properties, ArgWitness
+returns `review` rather than inventing a concrete validator-level witness.
+
+This is complementary to mcpcontract's semantic/rules-based compatibility
+analysis. ArgWitness only claims a breaking input when OLD accepts it and NEW
+rejects it under the advertised input schemas.
+
 ## Captured calls
 
 Create sanitized JSONL records:
