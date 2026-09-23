@@ -1,0 +1,42 @@
+name: Action smoke test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  action:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Unchanged contract succeeds
+        uses: ./
+        with:
+          before: examples/before.mcp.json
+          after: examples/before.mcp.json
+          report: artifacts/unchanged.md
+
+      - name: Breaking contract fails closed
+        id: breaking
+        continue-on-error: true
+        uses: ./
+        with:
+          before: examples/before.mcp.json
+          after: examples/after.mcp.json
+          report: artifacts/breaking.md
+
+      - name: Assert action semantics
+        shell: bash
+        env:
+          BREAKING_OUTCOME: ${{ steps.breaking.outcome }}
+          BREAKING_EXIT: ${{ steps.breaking.outputs.exit-code }}
+        run: |
+          test "$BREAKING_OUTCOME" = "failure"
+          test "$BREAKING_EXIT" = "1"
+          test -s artifacts/unchanged.md
+          test -s artifacts/breaking.md
