@@ -1,6 +1,6 @@
 # Releasing ArgWitness
 
-ArgWitness v0.1.0 was published successfully on 2026-09-23 through PyPI trusted publishing from GitHub Actions.
+ArgWitness releases v0.1.0 and v0.2.0 were published successfully on 2026-09-23 through PyPI trusted publishing from GitHub Actions.
 
 ## Trusted publisher
 
@@ -38,3 +38,7 @@ The release workflow repeats source tests, the demo, dependency checks, build va
 ## v0.1.0 evidence
 
 The first release workflow completed successfully. PyPI accepted both `argwitness-0.1.0-py3-none-any.whl` and `argwitness-0.1.0.tar.gz` and returned the public project/version URL. GitHub Release `v0.1.0` targets commit `885fc13714efc120b97952e43467b24624f7e5aa` and includes the wheel, source distribution, their publish attestations, and `SHA256SUMS`.
+
+## v0.2.0 evidence
+
+The v0.2.0 release added direct import of mcp-contracts v1-style `.mcpc.json` snapshots. PyPI trusted publishing and the matching GitHub Release completed successfully; the GitHub Release includes the wheel, source distribution, publish attestations, and `SHA256SUMS`.
