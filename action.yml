@@ -17,7 +17,7 @@ inputs:
     required: false
     default: ""
   format:
-    description: Report format: text, json, or markdown.
+    description: "Report format: text, json, or markdown."
     required: false
     default: markdown
   report:
@@ -35,7 +35,7 @@ inputs:
 
 outputs:
   exit-code:
-    description: ArgWitness exit code: 0 unchanged/added, 1 breaking, 2 review, 3 input error.
+    description: "ArgWitness exit code: 0 unchanged/added, 1 breaking, 2 review, 3 input error."
     value: ${{ steps.compare.outputs.exit-code }}
   report:
     description: Workspace-relative report path.
