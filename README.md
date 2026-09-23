@@ -125,7 +125,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - uses: GenRamzi/argwitness@v0.1.0
+      - uses: GenRamzi/argwitness@v0.2.0
         with:
           before: contracts/baseline.json
           after: contracts/candidate.json
