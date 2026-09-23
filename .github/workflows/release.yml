@@ -3,8 +3,6 @@ name: Release ArgWitness
 on:
   push:
     tags: ["v*"]
-  issues:
-    types: [opened]
   workflow_dispatch:
     inputs:
       version:
@@ -22,9 +20,6 @@ concurrency:
 
 jobs:
   release:
-    if: >-
-      github.event_name != 'issues' ||
-      (github.actor == 'GenRamzi' && github.event.issue.title == 'release: argwitness 0.3.0')
     name: Build, publish, and release
     runs-on: ubuntu-latest
     steps:
@@ -54,12 +49,7 @@ jobs:
           )"
           echo "version=$package_version" >> "$GITHUB_OUTPUT"
 
-          if [[ "${GITHUB_EVENT_NAME:-}" == "issues" ]]; then
-            if [[ "${GITHUB_ACTOR:-}" != "GenRamzi" || "$package_version" != "0.3.0" ]]; then
-              echo "issue-triggered release is restricted to GenRamzi and version 0.3.0" >&2
-              exit 1
-            fi
-          elif [[ "${GITHUB_REF_TYPE:-}" == "tag" ]]; then
+          if [[ "${GITHUB_REF_TYPE:-}" == "tag" ]]; then
             test "$GITHUB_REF_NAME" = "v$package_version" || {
               echo "tag $GITHUB_REF_NAME does not match package version $package_version" >&2
               exit 1
