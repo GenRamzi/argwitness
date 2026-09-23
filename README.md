@@ -101,6 +101,35 @@ These are **schema-envelope adapters**, not live SDK integrations or provider-co
 
 If any breaking finding exists, comparison exits `1` even when there are also review findings. A widening input schema returns `review` in this release: there is no schema-inclusion prover.
 
+## GitHub Action
+
+ArgWitness can run directly in pull requests without publishing the package to a registry. Until the first immutable release tag is published, pin a reviewed commit SHA rather than `main`:
+
+```yaml
+name: Tool contract compatibility
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: GenRamzi/argwitness@REVIEWED_SHA
+        with:
+          before: contracts/baseline.json
+          after: contracts/candidate.json
+          calls: contracts/sanitized-calls.jsonl
+          format: markdown
+          report: artifacts/argwitness.md
+```
+
+The Action installs the package from the pinned Action revision, writes the report inside the caller workspace, and fails closed for `breaking`, `review`, or input-error states. Raw argument values remain omitted unless `show-values: "true"` is explicitly enabled. Paths are constrained to the caller workspace.
+
 ## Python API
 
 ```python
