@@ -142,6 +142,46 @@ class InputTests(unittest.TestCase):
     def test_mcp_jsonrpc(self):
         self.assertIn("search", catalog({"jsonrpc": "2.0", "id": 1, "result": tool(obj())}))
 
+    def test_mcp_contracts_snapshot(self):
+        snapshot = {
+            "snapshotVersion": "1.0.0",
+            "server": {"name": "demo"},
+            "tools": {
+                "search": {
+                    "description": "Search",
+                    "inputSchema": obj({"limit": {"type": "integer", "maximum": 100}}, ["limit"]),
+                }
+            },
+        }
+        self.assertIn("search", catalog(snapshot))
+        normalized = normalize(snapshot)
+        self.assertEqual(normalized["tools"][0]["name"], "search")
+        self.assertEqual(normalized["tools"][0]["description"], "Search")
+
+    def test_mcp_contracts_snapshot_breaking_witness(self):
+        before = {
+            "snapshotVersion": "1.0.0",
+            "tools": {
+                "search": {
+                    "inputSchema": obj({"limit": {"type": "integer", "maximum": 100}}, ["limit"])
+                }
+            },
+        }
+        after = copy.deepcopy(before)
+        after["tools"]["search"]["inputSchema"]["properties"]["limit"]["maximum"] = 20
+        report = compare(before, after, show_values=True)
+        self.assertEqual(report["status"], "breaking")
+        finding = next(f for f in report["findings"] if "witness" in f)
+        self.assertEqual(finding["tool"], "search")
+        self.assertEqual(finding["witness"]["arguments"]["limit"], 100)
+
+    def test_mcp_contracts_snapshot_name_conflict(self):
+        with self.assertRaises(InputError):
+            catalog({
+                "snapshotVersion": "1.0.0",
+                "tools": {"search": {"name": "other", "inputSchema": obj()}},
+            })
+
     def test_chat_completions(self):
         self.assertIn("search", catalog([{"type": "function", "function": {"name": "search", "parameters": obj()}}]))
 
