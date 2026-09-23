@@ -35,21 +35,45 @@ the README; tool results and transcripts are not accepted as call records.
 
 ## CI in another repository
 
-Install a reviewed, immutable revision of ArgWitness (replace `REVIEWED_SHA` before
-use; no published release is assumed):
+Prefer the bundled GitHub Action and pin a reviewed immutable commit until a release
+tag exists:
+
+```yaml
+name: Tool contract compatibility
+on:
+  pull_request:
+permissions:
+  contents: read
+
+jobs:
+  argwitness:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: GenRamzi/argwitness@REVIEWED_SHA
+        with:
+          before: contracts/baseline.json
+          after: contracts/candidate.json
+          calls: contracts/sanitized-calls.jsonl
+          format: markdown
+          report: artifacts/argwitness.md
+```
+
+The Action constrains input and report paths to `GITHUB_WORKSPACE`, suppresses raw
+argument values by default, and fails for breaking, review, and input-error states.
+Protect the baseline through normal repository review; letting an untrusted patch
+rewrite both versions defeats the comparison.
+
+The CLI remains useful when a GitHub Action is not appropriate:
 
 ```bash
 python -m pip install 'git+https://github.com/GenRamzi/argwitness.git@REVIEWED_SHA'
 argwitness compare contracts/baseline.json contracts/candidate.json --format markdown
 ```
 
-Both exits `1` and `2` should block unattended approval. Never append `|| true` to
-make contract checks green. Protect the baseline through normal repository review;
-letting an untrusted patch rewrite both versions defeats the comparison.
-
-The project's own workflow runs tests without secrets on `pull_request`, not
-`pull_request_target`. The workflow matrix is configuration, not evidence of runs
-that have not occurred. See the validation record for checks actually executed.
+Never append `|| true` to make contract checks green. The project's workflows run
+without secrets on `pull_request`, not `pull_request_target`. See the validation
+record for checks actually executed.
 
 ## Agent instructions
 
